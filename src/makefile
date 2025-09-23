@@ -5,6 +5,8 @@ OBJDIR = ../obj
 BINDIR = ../bin
 INCDIR = ../include
 LIBDIR = ../lib
+PREFIX = /usr/local
+MANDIR = $(PREFIX)/share/man/man1
 
 OBJS = $(OBJDIR)/main.o $(OBJDIR)/myfilefunctions.o $(OBJDIR)/mystrfunctions.o
 PICOBJS = $(OBJDIR)/main.pic.o $(OBJDIR)/myfilefunctions.pic.o $(OBJDIR)/mystrfunctions.pic.o
@@ -43,6 +45,24 @@ $(OBJDIR)/mystrfunctions.pic.o: mystrfunctions.c $(INCDIR)/mystrfunctions.h
 	$(CC) $(CFLAGS) -fPIC -c $< -o $@
 $(OBJDIR)/myfilefunctions.pic.o: myfilefunctions.c $(INCDIR)/myfilefunctions.h
 	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+
+install: $(TARGET_STATIC) $(TARGET_DYNAMIC)
+	@echo "Installing clients and man page..."
+	install -d $(PREFIX)/bin
+	install -m 755 $(TARGET_STATIC) $(PREFIX)/bin/client_static
+	install -m 755 $(TARGET_DYNAMIC) $(PREFIX)/bin/client_dynamic
+	install -d $(MANDIR)
+	install -m 644 ../man/man1/client.1 $(MANDIR)/
+	install -m 644 ../man/man1/client_static.1 $(MANDIR)/
+	install -m 644 ../man/man1/client_dynamic.1 $(MANDIR)/
+
+uninstall:
+	@echo "Uninstalling clients and man page..."
+	rm -f $(PREFIX)/bin/client_static
+	rm -f $(PREFIX)/bin/client_dynamic
+	rm -f $(MANDIR)/client.1
+	rm -f $(MANDIR)/client_static.1
+	rm -f $(MANDIR)/client_dynamic.1
 
 
 clean:
