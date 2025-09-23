@@ -4,14 +4,21 @@ CFLAGS = -Wall -Werror -I../include
 OBJDIR = ../obj
 BINDIR = ../bin
 INCDIR = ../include
+LIBDIR = ../lib
+
 OBJS = $(OBJDIR)/main.o $(OBJDIR)/myfilefunctions.o $(OBJDIR)/mystrfunctions.o
-TARGET = $(BINDIR)/client
+LIBSTATIC = $(LIBDIR)/libmyutils.a
+TARGET = $(BINDIR)/client_static
 
 # Default target
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+$(TARGET): $(OBJDIR)/main.o $(LIBSTATIC)
+	$(CC) $(CFLAGS) -o $@ $< -L$(LIBDIR) -lmyutils
+
+# Build static library
+$(LIBSTATIC): $(OBJS)
+	ar -r $@ $^
 
 # Compile .c -> .o
 $(OBJDIR)/main.o: main.c $(INCDIR)/mystrfunctions.h $(INCDIR)/myfilefunctions.h
