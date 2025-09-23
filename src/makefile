@@ -7,18 +7,27 @@ INCDIR = ../include
 LIBDIR = ../lib
 
 OBJS = $(OBJDIR)/main.o $(OBJDIR)/myfilefunctions.o $(OBJDIR)/mystrfunctions.o
+PICOBJS = $(OBJDIR)/main.pic.o $(OBJDIR)/myfilefunctions.pic.o $(OBJDIR)/mystrfunctions.pic.o
 LIBSTATIC = $(LIBDIR)/libmyutils.a
-TARGET = $(BINDIR)/client_static
+LIBDYNAMIC = $(LIBDIR)/libmyutils.so
+TARGET_STATIC = $(BINDIR)/client_static
+TARGET_DYNAMIC = $(BINDIR)/client_dynamic
 
 # Default target
-all: $(TARGET)
+all: $(TARGET_STATIC) $(TARGET_DYNAMIC)
 
-$(TARGET): $(OBJDIR)/main.o $(LIBSTATIC)
-	$(CC) $(CFLAGS) -o $@ $< -L$(LIBDIR) -lmyutils
+$(TARGET_STATIC): $(OBJDIR)/main.o $(LIBSTATIC)
+	$(CC) -o $@ $< -L$(LIBDIR) -lmyutils
 
 # Build static library
 $(LIBSTATIC): $(OBJS)
 	ar -r $@ $^
+	
+$(TARGET_DYNAMIC): $(OBJDIR)/main.pic.o $(LIBDYNAMIC)
+	$(CC) -o $@ $< -L$(LIBDIR) -lmyutils
+
+$(LIBDYNAMIC): $(PICOBJS)
+	$(CC) -shared -o $@ $^
 
 # Compile .c -> .o
 $(OBJDIR)/main.o: main.c $(INCDIR)/mystrfunctions.h $(INCDIR)/myfilefunctions.h
@@ -28,9 +37,16 @@ $(OBJDIR)/mystrfunctions.o: mystrfunctions.c $(INCDIR)/mystrfunctions.h
 $(OBJDIR)/myfilefunctions.o: myfilefunctions.c $(INCDIR)/myfilefunctions.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(OBJDIR)/main.pic.o: main.c $(INCDIR)/mystrfunctions.h $(INCDIR)/myfilefunctions.h
+	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+$(OBJDIR)/mystrfunctions.pic.o: mystrfunctions.c $(INCDIR)/mystrfunctions.h
+	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+$(OBJDIR)/myfilefunctions.pic.o: myfilefunctions.c $(INCDIR)/myfilefunctions.h
+	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+
 
 clean:
-	rm -f $(OBJDIR)/*.o $(TARGET)
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/*.pic.o $(BINDIR)/* $(LIBDIR)/*
 	@echo "Cleaned src/"
 	
 .PHONY: all clean
